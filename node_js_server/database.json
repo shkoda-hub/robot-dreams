@@ -1,0 +1,21 @@
+[
+  {
+    "id": "de9aa359-fe70-4ec7-91dd-947ea1482d03",
+    "firstName": "Artem 100",
+    "email": "some@gmail.com",
+    "phone": "123123123"
+  },
+  {
+    "id": "117c5626-6dfc-4463-96ca-873b8dcc4140",
+    "firstName": "Artem 100",
+    "email": "some@gmail.com",
+    "phone": "123123123"
+  },
+  {
+    "id": "93240056-9d81-412a-a1f6-73aab0a0885f",
+    "firstName": "Artem 100",
+    "lastName": "Artem",
+    "email": "some123@mail.com",
+    "phone": "123123"
+  }
+]
