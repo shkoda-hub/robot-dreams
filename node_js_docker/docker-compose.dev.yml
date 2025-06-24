@@ -1,0 +1,30 @@
+services:
+  redis:
+    container_name: redis-like
+    build:
+      context: .
+      dockerfile: Dockerfile.redis.dev
+    command: npm run redis-like:dev
+    volumes:
+      - ./redis-like:/app/redis-like
+    networks:
+      - "internal"
+
+  kv-server:
+    container_name: kv-server
+    build:
+      context: .
+      dockerfile: Dockerfile.kv.dev
+    command: npm run kv:dev
+    volumes:
+      - ./kv-server:/app/kv-server
+    networks:
+      - "internal"
+    ports:
+      - "8080:3000"
+    environment:
+      REDIS_URL: http://redis:4000
+
+networks:
+  internal:
+    driver: bridge

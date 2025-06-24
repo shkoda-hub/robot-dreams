@@ -1,0 +1,32 @@
+{
+  "name": "node_js_docker",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "kv:start": "node ./kv-server/index.js",
+    "kv:dev": "nodemon ./kv-server/index.js",
+
+    "redis-like:start": "node ./redis-like/index.js",
+    "redis-like:dev": "nodemon ./redis-like/index.js",
+
+    "start": "docker compose -f docker-compose.yml up --build -d",
+    "start:dev": "docker compose -f docker-compose.dev.yml up --build -d",
+
+    "stop": "docker compose down",
+
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "eslint": "^9.28.0",
+    "globals": "^16.2.0",
+    "nodemon": "^3.1.10"
+  }
+}
