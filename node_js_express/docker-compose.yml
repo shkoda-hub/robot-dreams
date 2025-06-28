@@ -1,0 +1,13 @@
+services:
+  brew-api:
+    container_name: brew-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - ${PORT}:${PORT}
