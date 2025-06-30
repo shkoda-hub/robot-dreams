@@ -7,7 +7,7 @@ npm install
 ```
 2. To add new habit use
 ```
-DAY_OFFSET=2 node index.js add --name "nameOfHabbit" --freq "daily"
+DAY_OFFSET=2 node server.ts add --name "nameOfHabbit" --freq "daily"
 ```
 where DAY_OFFSET is an env of day offset for testing. By default offset is 0. So you can run without this env.
 

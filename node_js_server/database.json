@@ -17,5 +17,12 @@
     "lastName": "Artem",
     "email": "some123@mail.com",
     "phone": "123123"
+  },
+  {
+    "id": "151fd1dd-76f3-4141-8060-c71f71ffd1d0",
+    "firstName": "Artem 100",
+    "lastName": "Artem",
+    "email": "some@gmail.com",
+    "phone": "123123123"
   }
 ]

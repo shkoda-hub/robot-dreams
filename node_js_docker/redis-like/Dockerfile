@@ -7,4 +7,4 @@ RUN npm ci --production
 COPY redis-like/. .
 EXPOSE 4000
 
-CMD ["node", "index.js"]
+CMD ["node", "server.ts"]
