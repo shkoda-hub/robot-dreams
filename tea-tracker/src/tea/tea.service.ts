@@ -6,7 +6,9 @@ import { UpdateTeaDto } from './dto/update-tea.dto';
 import { TeasQueryParamsDto } from './dto/teas-query.dto';
 import { PaginatedTeasDto } from './dto/paginated-teas.dto';
 
-@Injectable()
+@Injectable({
+
+})
 export class TeaService {
   private teas: Tea[] = [];
 
