@@ -8,7 +8,6 @@ export function GuardsMiddleware(
   handlerFn: RequestHandler,
   globalGuards: any[] = [],
 ): RequestHandler {
-  console.log(handlerFn);
   return async (req: Request, res: Response, next: NextFunction) => {
     const controllerGuards: any[] =
       Reflect.getOwnMetadata(CONTROLLER_GUARDS, instance.constructor) || [];

@@ -25,36 +25,71 @@ export class Factory {
   }
 
   public static async create(module: any) {
+    console.log('Initializing app...');
     await Factory.loadModule(module);
     await Factory.loadRoutes();
 
     Factory.application.use(express.json());
     Factory.application.use(Factory.router);
+    console.log('App was initialized successfully.');
     return Factory.application;
   }
 
   private static async loadModule(module: any) {
+    console.log(`Loading module: ${module.name}`);
     const meta = Reflect.getMetadata(MODULE_META, module);
     if (!meta) return;
+
     (meta.imports || []).forEach(Factory.loadModule);
-    (meta.providers || []).forEach((provider: any) =>
-      Factory.container.register(provider, provider),
-    );
-    (meta.controllers || []).forEach((controller: any) =>
-      Factory.container.register(controller, controller),
-    );
+
+    const providers = meta.providers ?? [];
+    const controllers = meta.controllers ?? [];
+
+    await Factory.loadProviders(providers);
+    await Factory.loadControllers(controllers);
+  }
+
+  private static async loadProviders(providers: any[]) {
+    providers.forEach((provider: any) => {
+      if (provider.provide && provider.useValue !== undefined) {
+        console.log(
+          `Register injected provider: ${provider.provide} with value: ${provider.useValue}`,
+        );
+        Factory.container.register(provider.provide, {
+          useValue: provider.useValue,
+        });
+      } else if (provider.provide && provider.useClass) {
+        console.log(
+          `Register injected provider: ${provider.provide} with value: ${provider.useClass}`,
+        );
+        Factory.container.register(provider.provide, {
+          useClass: provider.useClass,
+        });
+      } else {
+        console.log(`Register provider: ${provider.name}`);
+        Factory.container.register(provider, provider);
+      }
+    });
+  }
+
+  private static async loadControllers(controllers: any[]) {
+    controllers.forEach((controller: any) => {
+      console.log(`Register controller: ${controller.name}`);
+      Factory.container.register(controller, controller);
+    });
   }
 
   private static async loadRoutes() {
     for (const [token] of (Factory.container as any).registry) {
-      if (!Reflect.hasMetadata(ROUTES, token)) continue;
+      if (typeof token !== 'function' || !Reflect.hasMetadata(ROUTES, token))
+        continue;
 
-      const prefix = Reflect.getMetadata(CONTROLLER_PREFIX, token);
-      const routes = Reflect.getMetadata(ROUTES, token);
+      const prefix: string = Reflect.getMetadata(CONTROLLER_PREFIX, token);
+      const routes: IRouteDefinition[] = Reflect.getMetadata(ROUTES, token);
 
       const instance = Factory.container.resolve(token) as any;
 
-      routes.forEach((route: IRouteDefinition) => {
+      routes.forEach((route) => {
         const handler = instance[route.handlerName] as RequestHandler;
 
         (Factory.router as any)[route.method](

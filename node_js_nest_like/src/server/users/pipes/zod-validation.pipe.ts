@@ -1,13 +1,10 @@
-import {
-  ArgumentMetadata,
-  PipeTransform,
-} from '../../../core/interfaces/interfaces';
+import { PipeTransform } from '../../../core/interfaces/interfaces';
 import { ZodError, ZodSchema } from 'zod';
 import { HttpException } from '../../../core/http/http-exception';
 
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodSchema) {}
-  async transform(value: any, metadata: ArgumentMetadata) {
+  async transform(value: any) {
     try {
       return await this.schema.parseAsync(value);
     } catch (error) {

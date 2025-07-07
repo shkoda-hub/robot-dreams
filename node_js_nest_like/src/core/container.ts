@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { INJECTABLE } from './decorators/keys';
+import { INJECT, INJECTABLE } from './decorators/keys';
 
 const DESIGN_PARAM_TYPES = 'design:paramtypes';
 
@@ -9,28 +9,41 @@ export class Container {
   private registry = new Map<any, any>();
   private singletons = new Map<any, any>();
 
-  register<T>(token: Constructor<T>, useClass: Constructor<T>) {
+  register<T>(token: Constructor<T> | any, useClass: Constructor<T> | any) {
     this.registry.set(token, useClass);
   }
 
-  resolve<T>(token: Constructor<T>): T {
+  resolve<T = any>(token: any): T {
+    const provider = this.registry.get(token);
+    if (!provider) throw new Error(`Provider ${String(token)} not registered`);
+
+    if (provider.useValue !== undefined) {
+      return provider.useValue;
+    }
+
+    const TargetClass = provider.useClass ?? provider;
+
     if (this.singletons.has(token)) {
       return this.singletons.get(token);
     }
 
-    const target = this.registry.get(token);
-    if (!target) throw new Error(`Provider ${token.name} not registered`);
-
-    if (!Reflect.getMetadata(INJECTABLE, target)) {
-      throw new Error(`Class ${token.name} is not @Injectable`);
+    if (!Reflect.getMetadata(INJECTABLE, TargetClass)) {
+      throw new Error(`Class ${TargetClass.name} is not @Injectable`);
     }
 
-    const deps = (Reflect.getMetadata(DESIGN_PARAM_TYPES, target) || []).map(
-      (dep: any) => this.resolve(dep),
+    const paramTypes: any[] =
+      Reflect.getMetadata(DESIGN_PARAM_TYPES, TargetClass) || [];
+
+    const injectTokens: Record<number, any> =
+      Reflect.getOwnMetadata(INJECT, TargetClass) || {};
+
+    const tokens = paramTypes.map((type, i) =>
+      injectTokens[i] != null ? injectTokens[i] : type,
     );
 
-    const instance = new target(...deps);
+    const deps = tokens.map((t) => this.resolve(t));
 
+    const instance = new TargetClass(...deps);
     this.singletons.set(token, instance);
     return instance;
   }

@@ -2,7 +2,7 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
+  HttpCode, Inject,
   NotFoundException,
   Param,
   Post,

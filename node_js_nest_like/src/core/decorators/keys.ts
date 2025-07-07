@@ -1,6 +1,7 @@
 export const CONTROLLER_PREFIX = Symbol('CONTROLLER_PREFIX');
 
 export const INJECTABLE = Symbol('INJECTABLE');
+export const INJECT = Symbol('INJECT');
 export const MODULE_META = Symbol('MODULE_META');
 
 export const ROUTES = Symbol('ROUTES');

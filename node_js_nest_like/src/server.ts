@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from './server/users/filters/httpErrors.filter';
 
 async function bootstrap() {
   Factory.userGlobalFilters(HttpExceptionFilter);
+
   const app = await Factory.create(AppModule);
 
   app.listen(3000, () => {
