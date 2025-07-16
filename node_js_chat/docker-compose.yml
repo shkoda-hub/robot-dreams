@@ -13,6 +13,7 @@ services:
   server:
     build:
       context: ./server
+      target: dev
       dockerfile: Dockerfile
     environment:
       - REDIS_URL=redis://redis:6379

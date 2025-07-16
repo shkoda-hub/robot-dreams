@@ -1,0 +1,13 @@
+version: "3.9"
+
+networks:
+  chatnet:
+    driver: bridge
+
+services:
+  server:
+    build:
+      context: ./server
+      target: prod
+      dockerfile: Dockerfile
+
