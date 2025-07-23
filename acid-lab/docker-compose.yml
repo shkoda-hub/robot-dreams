@@ -1,0 +1,36 @@
+version: "3.9"
+
+networks:
+  acid-lab:
+    driver: bridge
+
+services:
+
+  transfer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - ./src:/app/src
+    networks:
+      - acid-lab
+    depends_on:
+      postgres:
+        condition: service_started
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: acid_lab
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    networks:
+      - acid-lab
