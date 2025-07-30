@@ -1,17 +1,14 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Init1753255729733 implements MigrationInterface {
-  name = 'Init1753255729733';
+export class Init1753349180574 implements MigrationInterface {
+  name = 'Init1753349180574';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "accounts" RENAME COLUMN "someBalance" TO "balance"`,
-    );
     await queryRunner.query(
       `CREATE TABLE "movements" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "amount" numeric NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "from_id" uuid, "to_id" uuid, CONSTRAINT "PK_5a8e3da15ab8f2ce353e7f58f67" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `ALTER TABLE "accounts" ADD CONSTRAINT "CHK_addbc7bd2e197dafc204ca1c76" CHECK ("balance" >= 0)`,
+      `CREATE TABLE "accounts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "balance" numeric NOT NULL DEFAULT '0', CONSTRAINT "CHK_addbc7bd2e197dafc204ca1c76" CHECK ("balance" >= 0), CONSTRAINT "PK_5a7a02c20412299d198e097a8fe" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `ALTER TABLE "movements" ADD CONSTRAINT "FK_ba75b6592834c8762c35a8055dc" FOREIGN KEY ("from_id") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -28,12 +25,7 @@ export class Init1753255729733 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "movements" DROP CONSTRAINT "FK_ba75b6592834c8762c35a8055dc"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "accounts" DROP CONSTRAINT "CHK_addbc7bd2e197dafc204ca1c76"`,
-    );
+    await queryRunner.query(`DROP TABLE "accounts"`);
     await queryRunner.query(`DROP TABLE "movements"`);
-    await queryRunner.query(
-      `ALTER TABLE "accounts" RENAME COLUMN "balance" TO "someBalance"`,
-    );
   }
 }

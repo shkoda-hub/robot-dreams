@@ -19,7 +19,6 @@ async function makeMigration() {
   } catch (err) {
     console.error('error during migration', err);
   }
-
 }
 
 async function main() {

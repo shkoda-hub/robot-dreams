@@ -2,7 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  QueryFailedError,
+  Repository,
+} from 'typeorm';
 import { Movement } from './entities/movements.entity';
 
 @Injectable()
@@ -21,46 +26,65 @@ export class TransferService {
     const { from: fromId, to: toId, amount } = transfer;
 
     return await this.dataSource.transaction(
-      'SERIALIZABLE',
+      'READ COMMITTED',
       async (manager) => {
-        const fromAccount = await manager.findOne(Account, {
-          where: { id: fromId },
-          lock: { mode: 'pessimistic_write' },
-        });
+        const fromAccount = await this.findAccount(manager, fromId);
+        const toAccount = await this.findAccount(manager, toId);
 
-        const toAccount = await manager.findOne(Account, {
-          where: { id: toId },
-          lock: { mode: 'pessimistic_write' },
-        });
+        await this.adjustBalance(manager, fromId, toId, amount);
 
-        if (!fromAccount) {
-          throw new BadRequestException(`Account ${fromId} not found`);
-        }
-
-        if (!toAccount) {
-          throw new BadRequestException(`Account ${toId} not found`);
-        }
-
-        if (fromAccount.balance < amount) {
-          throw new BadRequestException(`Insufficient balance`);
-        }
-
-        // await manager.increment(Account, { id: toId }, 'balance', amount);
-        // await manager.decrement(Account, { id: fromId }, 'balance', amount);
-
-        fromAccount.balance -= amount;
-        toAccount.balance += amount;
-
-        await manager.save([fromAccount, toAccount]);
-
-        const movement = manager.create(Movement, {
-          fromAccount,
-          toAccount,
-          amount,
-        });
-
-        return await manager.save(movement);
+        return await this.saveMovement(manager, fromAccount, toAccount, amount);
       },
     );
+  }
+
+  private async findAccount(
+    manager: EntityManager,
+    id: string,
+  ): Promise<Account> {
+    const account = await manager.findOne(Account, {
+      where: { id },
+      lock: { mode: 'pessimistic_write' },
+    });
+
+    if (!account) throw new BadRequestException(`Account ${id} not found`);
+
+    return account;
+  }
+
+  private async adjustBalance(
+    manager: EntityManager,
+    fromId: string,
+    toId: string,
+    amount: number,
+  ): Promise<void> {
+    try {
+      await manager.decrement(Account, { id: fromId }, 'balance', amount);
+      await manager.increment(Account, { id: toId }, 'balance', amount);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).code === '23514'
+      ) {
+        throw new BadRequestException('Insufficient balance');
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  private async saveMovement(
+    manager: EntityManager,
+    fromAccount: Account,
+    toAccount: Account,
+    amount: number,
+  ): Promise<Movement> {
+    const movement = manager.create(Movement, {
+      fromAccount: fromAccount,
+      toAccount: toAccount,
+      amount,
+    });
+
+    return await manager.save(movement);
   }
 }

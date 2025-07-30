@@ -6,4 +6,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["sh", "-c", "npm run migration:run && npm run start:debug"]
+CMD ["sh", "-c", "npm run migration:run && npm run start:dev"]
