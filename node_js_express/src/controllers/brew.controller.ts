@@ -30,13 +30,7 @@ export class BrewController {
     req: Request,
     res: Response<BrewDto>
   ) => {
-    console.log('some');
     const brew = await this.brewsService.getBrewById(req.params.id);
-
-    if (!brew) {
-      throw createHttpError(404, `Brew with id ${req.params.id} not found`);
-    }
-
     res.status(200).json(brew);
   };
 
@@ -44,25 +38,15 @@ export class BrewController {
     req: Request<{id: string}, unknown, CreateBrewDto>,
     res: Response<BrewDto | ErrorMessage>
   ) => {
-    const brew = await this.brewsService.updateBrew(req.params.id, req.body);
-
-    if (!brew) {
-      throw createHttpError(404, `Brew with id ${req.params.id} not found`);
-    }
-
-    res.status(201).json(brew);
+    const updatedBrew = await this.brewsService.updateBrew(req.params.id, req.body);
+    res.status(201).json(updatedBrew);
   };
 
   deleteBrew = async (
     req: Request<{id: string}>,
     res: Response
   ) => {
-    const result = await this.brewsService.deleteBrew(req.params.id);
-
-    if (!result) {
-      throw createHttpError(404, `Brew with id ${req.params.id} not found`);
-    }
-
+    await this.brewsService.deleteBrew(req.params.id);
     res.sendStatus(204);
   };
 }

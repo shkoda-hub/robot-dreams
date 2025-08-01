@@ -1,6 +1,7 @@
 import {BrewDto, CreateBrewDto} from '../dto/brew.dto';
 import {randomUUID} from 'node:crypto';
 import {GetAllQueryParams} from '../interfaces/common.interfaces';
+import createHttpError from 'http-errors';
 
 export class BrewService {
   private readonly brews = new Map<string, BrewDto>();
@@ -17,31 +18,24 @@ export class BrewService {
   async getAllBrews(queryParams: GetAllQueryParams = {}): Promise<BrewDto[]> {
     const { method, ratingMin } = queryParams;
 
-    return [...this.brews.values()].filter(brew => {
-      if (method && brew.method !== method) {
-        return false;
-      }
-
-      if (ratingMin != null) {
-        if (brew.rating == null) {
-          return false;
-        }
-        if (brew.rating < ratingMin) {
-          return false;
-        }
-      }
-
-      return true;
-    });
+    return [...this.brews.values()]
+      .filter(brew => !method || brew.method === method)
+      .filter(brew => !ratingMin || (brew.rating != null && brew.rating >= ratingMin));
   }
 
-  async getBrewById(id: string): Promise<BrewDto | undefined> {
-    return this.brews.get(id);
+  async getBrewById(id: string): Promise<BrewDto> {
+    const brew = this.brews.get(id);
+
+    if (!brew) {
+      throw createHttpError(400, `Brew with id ${id} not found`);
+    }
+
+    return brew;
   }
 
   async updateBrew(id: string, brew: CreateBrewDto): Promise<BrewDto | undefined> {
     if (!this.brews.has(id)) {
-      return undefined;
+      throw createHttpError(400, `Brew with id ${id} not found`);
     }
 
     const updatedBrew: BrewDto = { id, ...brew };
@@ -49,12 +43,11 @@ export class BrewService {
     return updatedBrew;
   }
 
-  async deleteBrew(id: string): Promise<boolean> {
+  async deleteBrew(id: string): Promise<void> {
     if (!this.brews.has(id)) {
-      return false;
+      throw createHttpError(400, `Brew with id ${id} not found`);
     }
 
     this.brews.delete(id);
-    return true;
   }
 }
