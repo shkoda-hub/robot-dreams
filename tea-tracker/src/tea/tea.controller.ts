@@ -2,8 +2,7 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode, Inject,
-  NotFoundException,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -61,11 +60,7 @@ export class TeaController {
     type: TeaDto,
   })
   async getOne(@Param('id') id: string) {
-    const tea = await this.teaService.getOne(id);
-    if (!tea) {
-      throw new NotFoundException(`Tea with id ${id} not found`);
-    }
-    return tea;
+    return await this.teaService.getOne(id);
   }
 
   @Post()
@@ -88,11 +83,7 @@ export class TeaController {
     @Param('id') id: string,
     @ZBody(updateTeaSchema) body: UpdateTeaDto,
   ) {
-    const updated = await this.teaService.update(id, body);
-    if (!updated) {
-      throw new NotFoundException(`Tea with id ${id} not found`);
-    }
-    return updated;
+    return await this.teaService.update(id, body);
   }
 
   @Delete(':id')
@@ -101,10 +92,6 @@ export class TeaController {
     status: 204,
   })
   async delete(@Param('id') id: string) {
-    const deleted = await this.teaService.delete(id);
-
-    if (!deleted) {
-      throw new NotFoundException(`Tea with id ${id} not found`);
-    }
+    await this.teaService.delete(id);
   }
 }

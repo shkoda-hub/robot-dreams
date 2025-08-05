@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Tea } from './entities/tea.entity';
 import { randomUUID } from 'node:crypto';
 import { CreateTeaDto } from './dto/create-tea.dto';
@@ -33,8 +33,12 @@ export class TeaService {
     };
   }
 
-  async getOne(id: string): Promise<Tea | undefined> {
-    return this.teas.find((tea) => tea.id === id);
+  async getOne(id: string): Promise<Tea> {
+    const tea = this.teas.find((t) => t.id === id);
+
+    if (!tea) throw new NotFoundException(`Tea with id ${id} not found`);
+
+    return tea;
   }
 
   async create(tea: CreateTeaDto): Promise<Tea> {
@@ -46,12 +50,11 @@ export class TeaService {
     return newTea;
   }
 
-  async update(id: string, tea: UpdateTeaDto): Promise<Tea | undefined> {
+  async update(id: string, tea: UpdateTeaDto): Promise<Tea> {
     const index = this.teas.findIndex((t) => t.id === id);
 
-    if (index === -1) {
-      return undefined;
-    }
+    if (index === -1)
+      throw new NotFoundException(`Tea with id ${id} not found`);
 
     const existing = this.teas[index];
     const updated = {
@@ -63,14 +66,12 @@ export class TeaService {
     return updated;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string): Promise<void> {
     const index = this.teas.findIndex((t) => t.id === id);
 
-    if (index === -1) {
-      return false;
-    }
+    if (index === -1)
+      throw new NotFoundException(`Tea with id ${id} not found`);
 
     this.teas = this.teas.filter((t) => t.id !== id);
-    return true;
   }
 }
