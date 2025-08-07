@@ -1,6 +1,12 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { lastValueFrom, timeout } from 'rxjs';
+import { lastValueFrom, retry, timeout } from 'rxjs';
 import { RedisService } from '../redis/redis.service';
 
 @Injectable()
@@ -21,26 +27,27 @@ export class NotificationService implements OnModuleInit {
 
   async notify() {
     const message = `User signed up for ${new Date().toLocaleString()}`;
+    await this.tryToEmit(message);
+  }
 
-    const id = await this.redisService.xadd(
-      this.stream,
-      '*',
-      'message',
-      message,
-    );
+  private async appendToRedis(message: string) {
+    return await this.redisService.xadd(this.stream, '*', 'message', message);
+  }
 
-    this.logger.debug(`added message with id ${id}`);
-
+  private async tryToEmit(message: string) {
     try {
       await lastValueFrom(
-        this.producer.emit('events.notifications', message).pipe(timeout(5000)),
+        this.producer
+          .emit('events.notifications', message)
+          .pipe(timeout(2000), retry({ count: 3, delay: 500 })),
+      );
+    } catch {
+      const messageId = await this.appendToRedis(message);
+      this.logger.error(
+        `Failed to emit message to kafka. Trying to retry via RetryWorker. MessageId: ${messageId}`,
       );
 
-      await this.redisService.xack(this.stream, this.group, id!);
-    } catch {
-      this.logger.error(
-        `Failed to emit message to kafka. Trying to retry via RetryWorker`,
-      );
+      throw new InternalServerErrorException('Internal Server Error');
     }
   }
 }

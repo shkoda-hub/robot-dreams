@@ -7,6 +7,6 @@ export class NotificationController {
 
   @Post('signup')
   async userSignUp() {
-    await this.notificationService.notify();
+    return await this.notificationService.notify();
   }
 }

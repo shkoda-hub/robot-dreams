@@ -3,6 +3,7 @@ import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RedisModule } from '../redis/redis.module';
+import { RetryWorkerService } from './retry-worker.service';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { RedisModule } from '../redis/redis.module';
     ]),
     RedisModule,
   ],
-  providers: [NotificationService],
+  providers: [NotificationService, RetryWorkerService],
   controllers: [NotificationController],
 })
 export class NotificationModule {}
