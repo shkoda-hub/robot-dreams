@@ -45,7 +45,7 @@ export class ChatGateway
         for (const [, socket] of this.server.sockets.sockets) {
           const user = socket.data.user as string;
 
-          if (chatDto.members.includes(user)) {
+          if (chatDto.members.includes(user) || chatDto) {
             socket.emit(ChatEventType.CHAT_CREATED, chatDto);
           }
         }

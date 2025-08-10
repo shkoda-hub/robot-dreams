@@ -71,7 +71,8 @@ export class ChatsService implements OnModuleInit, OnModuleDestroy {
     createChatDTO: CreateChatDTO,
     creator: string,
   ): Promise<ChatDTO> {
-    const { name: chatName, members } = createChatDTO;
+    const { name: chatName } = createChatDTO;
+    const members = Array.from(new Set([...createChatDTO.members, creator]));
 
     const name = chatName
       ? chatName
