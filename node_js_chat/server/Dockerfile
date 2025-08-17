@@ -15,8 +15,8 @@ CMD ["npm", "run", "start:dev"]
 FROM deps AS builder
 WORKDIR /app
 COPY . .
-RUN npm build
-RUN npm prune --production
+RUN npm run build
+RUN npm ci --omit=dev
 
 FROM node:lts-alpine AS prod
 WORKDIR /app
@@ -24,4 +24,4 @@ ENV NODE_ENV=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 EXPOSE 3000
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]
